@@ -28,7 +28,10 @@ const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
 
-const db = new sqlite3.Database("./db.sqlite")
+// Modificar o caminho do banco de dados para usar o disco persistente no Render
+const dbPath = process.env.NODE_ENV === "production" ? "/opt/render/project/src/db.sqlite" : "./db.sqlite"
+
+const db = new sqlite3.Database(dbPath)
 
 // Modify the getLocalIP function to use environment variables for hosting
 function getLocalIP() {
@@ -60,15 +63,19 @@ app.use(express.static("public"))
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 app.set("view engine", "ejs")
 
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, "uploads")
+// Modificar o caminho de uploads para funcionar no Render
+const uploadDir =
+  process.env.NODE_ENV === "production" ? "/opt/render/project/src/uploads" : path.join(__dirname, "uploads")
+
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true })
 }
 
 // Configure Multer for image uploads
 const storage = multer.diskStorage({
-  destination: "uploads/",
+  destination: (req, file, cb) => {
+    cb(null, uploadDir)
+  },
   filename: (req, file, cb) => {
     const unique = Date.now() + "-" + Math.round(Math.random() * 1e9)
     cb(null, unique + path.extname(file.originalname))
@@ -314,6 +321,9 @@ app.get("/galeria/todas", (req, res) => {
 app.use((req, res) => {
   res.status(404).render("404", { pageTitle: "Página não encontrada" })
 })
+
+// Atualizar o caminho estático para uploads
+app.use("/uploads", express.static(uploadDir))
 
 // Update the server start message to show the BASE_URL if available
 server.listen(PORT, "0.0.0.0", () => {
