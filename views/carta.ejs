@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'sans': ['Poppins', 'sans-serif'],
+          },
+          colors: {
+            'netflix-red': '<%= data.theme === "ocean" ? "#0284c7" : (data.theme === "sunset" ? "#ea580c" : (data.theme === "forest" ? "#16a34a" : (data.theme === "dark" ? "#ef4444" : "#e50914"))) %>',
+            'netflix-black': '<%= data.theme === "dark" ? "#030712" : "#141414" %>',
+            'netflix-dark': '<%= data.theme === "dark" ? "#111827" : "#181818" %>',
+            'netflix-gray': '#808080',
+            'netflix-light': '#e5e5e5',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: theme('colors.netflix-black');
+    }
+    
+    .movie-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .movie-card:hover {
+      transform: scale(1.05);
+      z-index: 10;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+    
+    .movie-info {
+      background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+    }
+    
+    .match {
+      color: #46d369;
+    }
+    
+    .banner-gradient {
+      background: linear-gradient(to bottom, transparent 0%, rgba(20, 20, 20, 0.8) 60%, theme('colors.netflix-black') 100%);
+    }
+    
+    .comment-appear {
+      animation: commentAppear 0.5s ease-out forwards;
+    }
+    
+    @keyframes commentAppear {
+      from { 
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="netflix-container max-w-7xl mx-auto px-4 py-8">
+    <header class="relative banner h-[50vh] md:h-[70vh] mb-12 flex items-center justify-center overflow-hidden">
+      <div class="absolute inset-0 z-0">
+        <img src="/uploads/<%= imagens[0] %>" alt="Banner Image" class="w-full h-full object-cover">
+        <div class="absolute inset-0 banner-gradient"></div>
+      </div>
+      
+      <!-- Corrigir a exibição da data no layout Netflix -->
+      <div class="relative z-10 text-center px-4">
+        <div class="mb-4 text-netflix-red font-bold">
+          <span class="text-lg uppercase tracking-wider">NETFLIX APRESENTA</span>
+        </div>
+        <h1 class="text-4xl md:text-6xl font-bold text-netflix-red mb-4 drop-shadow-lg"><%= data.nome1 %> & <%= data.nome2 %></h1>
+        <p class="text-xl md:text-2xl text-netflix-light mb-6">Uma história de amor verdadeira desde <%= new Date(data.data_inicio + 'T12:00:00').toLocaleDateString('pt-BR', {day: 'numeric', month: 'long', year: 'numeric'}) %></p>
+        <div class="flex flex-wrap justify-center gap-3 mb-8">
+          <span class="px-3 py-1 bg-netflix-red text-white rounded-sm text-sm">Romance</span>
+          <span class="px-3 py-1 bg-netflix-dark text-white rounded-sm text-sm">Drama</span>
+          <span class="px-3 py-1 bg-netflix-dark text-white rounded-sm text-sm">Comédia</span>
+          <span class="px-3 py-1 bg-netflix-dark text-white rounded-sm text-sm">Aventura</span>
+        </div>
+        <div class="inline-flex items-center gap-2 px-6 py-3 bg-white text-netflix-black rounded font-medium hover:bg-opacity-90 transition-colors cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+          </svg>
+          <span>Assistir Agora</span>
+        </div>
+      </div>
+    </header>
+    
+    <div class="categories flex flex-wrap justify-center gap-4 mb-8">
+      <div class="category active px-4 py-2 bg-netflix-red text-white rounded-full text-sm font-medium">Momentos</div>
+      <div class="category px-4 py-2 bg-netflix-dark text-netflix-light rounded-full text-sm font-medium">Lembranças</div>
+      <div class="category px-4 py-2 bg-netflix-dark text-netflix-light rounded-full text-sm font-medium">Favoritos</div>
+      <div class="category px-4 py-2 bg-netflix-dark text-netflix-light rounded-full text-sm font-medium">Especiais</div>
+    </div>
+    
+    <section class="tempo text-center mb-12 p-6 bg-netflix-dark rounded-md">
+      <h2 class="text-2xl font-bold text-netflix-red mb-3">Tempo de Exibição</h2>
+      <p class="text-netflix-light text-lg">Estão juntos há <span class="text-netflix-red font-bold"><%= tempoSimples %></span></p>
+      <div id="time-counter" class="mt-4 p-3 bg-black/30 rounded-md inline-block text-netflix-light">
+        <%= tempoJuntos %>
+      </div>
+    </section>
+    
+    <section class="texto text-center mb-12 p-8 bg-netflix-dark rounded-md">
+      <h2 class="text-2xl font-bold text-netflix-red mb-4">Sinopse</h2>
+      <p class="text-netflix-light text-lg leading-relaxed"><%= data.texto %></p>
+    </section>
+    
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-netflix-light mb-6">Episódios Marcantes</h2>
+      <div class="galeria grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% imagens.slice(0, 5).forEach((imagem, index) => { %>
+          <div class="movie-card relative rounded-md overflow-hidden h-[400px] bg-netflix-dark">
+            <img src="/uploads/<%= imagem %>" alt="Imagem do casal <%= index + 1 %>" class="w-full h-full object-cover">
+            <% if (index === 0) { %>
+              <div class="absolute top-3 right-3 bg-netflix-red text-white px-2 py-1 rounded text-xs font-bold">
+                TOP 1
+              </div>
+            <% } %>
+            <div class="movie-info absolute bottom-0 left-0 right-0 p-4 text-white">
+              <h3 class="text-xl font-bold mb-2">
+                <%= ["Primeiro Encontro", "Aventuras de Viagem", "Celebrações Especiais", "Cotidiano a Dois", "Nosso Futuro"][index] %>
+              </h3>
+              <p class="text-sm text-netflix-light mb-3">
+                <%= ["A história de como tudo começou e o primeiro olhar que mudou tudo.", 
+                    "Explorando o mundo juntos, criando memórias que durarão para sempre.", 
+                    "Cada momento de celebração fortalece ainda mais o nosso laço.",
+                    "A beleza está nos pequenos momentos compartilhados todos os dias.",
+                    "Preparando os próximos capítulos desta linda história."][index] %>
+              </p>
+              <div class="flex items-center gap-3">
+                <span class="match text-sm font-medium"><%= [98, 95, 97, 99, 100][index] %>% compatível</span>
+                <span class="text-xs text-netflix-gray"><%= [2020, 2021, 2022, 2023, 2024][index] %></span>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </section>
+    
+    <section class="comentarios mb-12 p-6 bg-netflix-dark rounded-md">
+      <h2 class="text-2xl font-bold text-netflix-red mb-6">Comentários dos Espectadores</h2>
+      
+      <form id="comment-form" action="/<%= data.slug %>/comentar" method="POST" class="mb-8 p-4 bg-black/50 rounded-md">
+        <div class="mb-4">
+          <label for="nome" class="block text-sm font-medium text-netflix-light mb-1">Seu Nome</label>
+          <input type="text" name="nome" id="nome" required
+            class="w-full px-3 py-2 bg-netflix-dark border border-netflix-gray/30 text-netflix-light rounded focus:outline-none focus:ring-2 focus:ring-netflix-red">
+        </div>
+        <div class="mb-4">
+          <label for="comentario" class="block text-sm font-medium text-netflix-light mb-1">Sua Avaliação</label>
+          <textarea name="comentario" id="comentario" rows="3" required
+            class="w-full px-3 py-2 bg-netflix-dark border border-netflix-gray/30 text-netflix-light rounded focus:outline-none focus:ring-2 focus:ring-netflix-red"></textarea>
+        </div>
+        <button type="submit" class="px-4 py-2 bg-netflix-red text-white rounded hover:bg-opacity-90 transition-colors">
+          Enviar Avaliação
+        </button>
+      </form>
+      
+      <div id="comments-container" class="space-y-4">
+        <% if (comentarios && comentarios.length > 0) { %>
+          <% comentarios.forEach(comentario => { %>
+            <div class="p-4 bg-black/50 rounded-md">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-full bg-netflix-red flex items-center justify-center text-white font-bold">
+                  <%= comentario.nome.charAt(0).toUpperCase() %>
+                </div>
+                <div class="font-medium text-netflix-light"><%= comentario.nome %></div>
+                <div class="text-xs text-netflix-gray ml-auto">
+                  <%= new Date(comentario.created_at).toLocaleDateString('pt-BR', {day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo'}) %>
+                </div>
+              </div>
+              <div class="text-netflix-light"><%= comentario.comentario %></div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <p id="no-comments" class="text-center text-netflix-gray italic">Seja o primeiro a avaliar esta história!</p>
+        <% } %>
+      </div>
+    </section>
+    
+    <section class="qrcode text-center mb-8 p-6 bg-netflix-dark rounded-md">
+      <p class="text-netflix-light mb-4">Compartilhe esta história:</p>
+      <img src="<%= qrCode %>" alt="QR Code" class="inline-block w-32 h-32 p-2 bg-white rounded">
+    </section>
+    
+    <div class="netflix-logo text-center mb-8">
+      <div class="inline-block text-netflix-red font-bold text-5xl tracking-tighter">
+        NETFLIX
+      </div>
+      <p class="text-netflix-light mt-2">Baseado em uma história real</p>
+    </div>
+    
+    <footer class="text-center text-netflix-gray text-sm">
+      <p>Baseado em uma história real</p>
+      <p class="mt-2">© 2024 Nossa História de Amor</p>
+    </footer>
+  </div>
+  
+  <!-- Corrigir o script para calcular o tempo corretamente com o fuso horário no layout Netflix -->
+  <script>
+    // Connect to Socket.IO
+    const socket = io();
+    
+    // Join the story room
+    socket.emit('join-story', '<%= data.slug %>');
+    
+    // Get DOM elements
+    const timeCounter = document.getElementById('time-counter');
+    const commentsContainer = document.getElementById('comments-container');
+    const noCommentsMessage = document.getElementById('no-comments');
+    const commentForm = document.getElementById('comment-form');
+    
+    // Format date for display
+    function formatDate(date) {
+      return new Date(date).toLocaleDateString('pt-BR', {
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    
+    // Calculate time together with correct timezone handling
+    function calculateTimeTogether(startDate) {
+      // Adicionar T12:00:00 para garantir que a data seja interpretada corretamente
+      const start = new Date(startDate + 'T12:00:00');
+      const now = new Date();
+      
+      const diffTime = Math.abs(now - start);
+      const years = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365));
+      const months = Math.floor((diffTime % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
+      const days = Math.floor((diffTime % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffTime % (1000 * 60)) / 1000);
+      
+      return `${years} anos, ${months} meses, ${days} dias, ${hours} horas, ${minutes} minutos e ${seconds} segundos`;
+    }
+    
+    // Update time counter
+    socket.on('time-update', (data) => {
+      if (timeCounter) {
+        timeCounter.textContent = calculateTimeTogether('<%= data.data_inicio %>');
+      }
+    });
+    
+    // Handle new comments
+    socket.on('new-comment', (comment) => {
+      // Remove no comments message if it exists
+      if (noCommentsMessage) {
+        noCommentsMessage.remove();
+      }
+      
+      // Create new comment element
+      const commentElement = document.createElement('div');
+      commentElement.className = 'p-4 bg-black/50 rounded-md comment-appear';
+      commentElement.innerHTML = `
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-8 h-8 rounded-full bg-netflix-red flex items-center justify-center text-white font-bold">
+            ${comment.nome.charAt(0).toUpperCase()}
+          </div>
+          <div class="font-medium text-netflix-light">${comment.nome}</div>
+          <div class="text-xs text-netflix-gray ml-auto">
+            ${formatDate(comment.created_at)}
+          </div>
+        </div>
+        <div class="text-netflix-light">${comment.comentario}</div>
+      `;
+      
+      // Add to the beginning of the comments container
+      commentsContainer.insertBefore(commentElement, commentsContainer.firstChild);
+    });
+  </script>
+</body>
+</html>

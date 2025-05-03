@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'sans': ['Poppins', 'sans-serif'],
+            'script': ['"Dancing Script"', 'cursive'],
+          },
+          colors: {
+            'love-red': '#e94057',
+            'love-pink': '#f27121',
+            'love-purple': '#8a2387',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-bg {
+      background: linear-gradient(135deg, #8a2387, #e94057, #f27121);
+    }
+  </style>
+</head>
+<body class="min-h-screen gradient-bg flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full text-center">
+    <div class="text-9xl font-script text-love-red mb-4">404</div>
+    <h1 class="text-3xl font-bold mb-4">Página não encontrada</h1>
+    <p class="text-gray-600 mb-8">A história de amor que você procura não existe ou foi removida.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="/" class="px-6 py-3 bg-gradient-to-r from-love-purple via-love-red to-love-pink text-white font-medium rounded-md shadow-md hover:shadow-lg transition-all">
+        Criar Nova História
+      </a>
+      <a href="/galeria/todas" class="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-md shadow-md hover:shadow-lg transition-all">
+        Ver Galeria
+      </a>
+    </div>
+  </div>
+</body>
+</html>

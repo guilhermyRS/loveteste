@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'sans': ['Poppins', 'sans-serif'],
+            'script': ['"Dancing Script"', 'cursive'],
+          },
+          colors: {
+            'love-red': '#e94057',
+            'love-pink': '#f27121',
+            'love-purple': '#8a2387',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-bg {
+      background: linear-gradient(135deg, #8a2387, #e94057, #f27121);
+    }
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-10px);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-100">
+  <header class="gradient-bg text-white py-12 px-4">
+    <div class="container mx-auto text-center">
+      <h1 class="text-4xl md:text-5xl font-script font-bold mb-4">Galeria de Histórias de Amor</h1>
+      <p class="text-xl">Explore histórias de amor criadas em nossa plataforma</p>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-12">
+    <% if (declaracoes && declaracoes.length > 0) { %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <% declaracoes.forEach(declaracao => { %>
+          <a href="/<%= declaracao.slug %>" class="card-hover block bg-white rounded-lg overflow-hidden shadow-lg">
+            <% 
+              const imagens = declaracao.imagens ? declaracao.imagens.split(',') : [];
+              const primeiraImagem = imagens.length > 0 ? imagens[0] : null;
+            %>
+            <div class="h-48 bg-gray-200 overflow-hidden">
+              <% if (primeiraImagem) { %>
+                <img src="/uploads/<%= primeiraImagem %>" alt="Imagem do casal" class="w-full h-full object-cover">
+              <% } else { %>
+                <div class="w-full h-full flex items-center justify-center bg-gray-300">
+                  <span class="text-gray-500">Sem imagem</span>
+                </div>
+              <% } %>
+            </div>
+            <div class="p-6">
+              <h2 class="text-2xl font-script text-love-red mb-2"><%= declaracao.nome1 %> & <%= declaracao.nome2 %></h2>
+              <p class="text-gray-600 mb-4 line-clamp-2"><%= declaracao.texto.substring(0, 100) %>...</p>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-500">
+                  <%= new Date(declaracao.data_inicio).toLocaleDateString('pt-BR', {day: 'numeric', month: 'long', year: 'numeric'}) %>
+                </span>
+                <span class="px-3 py-1 bg-love-red/10 text-love-red rounded-full text-xs">
+                  <%= declaracao.layout === 'carta' ? 'Carta' : 'Netflix' %>
+                </span>
+              </div>
+            </div>
+          </a>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-12">
+        <h2 class="text-2xl font-medium text-gray-700 mb-4">Nenhuma história encontrada</h2>
+        <p class="text-gray-500 mb-8">Seja o primeiro a criar uma linda história de amor!</p>
+        <a href="/" class="px-6 py-3 bg-gradient-to-r from-love-purple via-love-red to-love-pink text-white font-medium rounded-md shadow-md hover:shadow-lg transition-all">
+          Criar Minha História
+        </a>
+      </div>
+    <% } %>
+  </main>
+
+  <footer class="gradient-bg text-white py-8 px-4 mt-12">
+    <div class="container mx-auto text-center">
+      <p>Eternize seu amor e compartilhe com quem você ama ❤️</p>
+      <p class="mt-2 text-sm opacity-75">© 2024 Nossa História de Amor</p>
+      <div class="mt-4">
+        <a href="/" class="text-white hover:text-white/80 transition-colors">Criar Nova História</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
